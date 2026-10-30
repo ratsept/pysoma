@@ -37,11 +37,18 @@ class SomaApi:
         else:
             return requests.get(url = "http://"+self.soma_connect_ip+":"+str(self.soma_connect_port)+"/get_shade_state/"+mac, timeout = self.timeout).json()
 
-    def set_shade_position(self, mac, position):
+    def set_shade_position(self, mac, position, close_upwards = False, morning_mode = False):
+        # Optional flags (SOMA Connect 2.2.5+) are only sent when set, so default calls are unchanged.
+        # morning_mode moves the motor slowly and quietly; close_upwards closes Tilt shades upwards.
+        options = ""
+        if close_upwards:
+            options += "&close_upwards=1"
+        if morning_mode:
+            options += "&morning_mode=1"
         if(self.soma_connect_version.split('.')[0] == '3'):
-            return requests.get(url = "http://"+self.soma_connect_ip+":"+str(self.soma_connect_port)+"/set_shade_position?mac="+mac+"&pos="+str(position), timeout = self.timeout).json()
+            return requests.get(url = "http://"+self.soma_connect_ip+":"+str(self.soma_connect_port)+"/set_shade_position?mac="+mac+"&pos="+str(position)+options, timeout = self.timeout).json()
         else:
-            return requests.get(url = "http://"+self.soma_connect_ip+":"+str(self.soma_connect_port)+"/set_shade_position/"+mac+"/"+str(position), timeout = self.timeout).json()
+            return requests.get(url = "http://"+self.soma_connect_ip+":"+str(self.soma_connect_port)+"/set_shade_position/"+mac+"/"+str(position)+options.replace("&", "?", 1), timeout = self.timeout).json()
 
     def get_battery_level(self, mac):
         if(self.soma_connect_version.split('.')[0] == '3'):
